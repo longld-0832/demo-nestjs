@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { I18nService } from 'nestjs-i18n';
 import { User } from '../database/entities';
 import { UsersService } from '../users/users.service';
 import { AuthTokenResponse, JwtPayload } from './auth.types';
@@ -20,12 +21,13 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly i18n: I18nService,
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthTokenResponse> {
     const existing = await this.usersService.findByEmail(dto.email);
     if (existing) {
-      throw new ConflictException('Email is already registered');
+      throw new ConflictException(this.i18n.t('auth.EMAIL_ALREADY_REGISTERED'));
     }
 
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
@@ -41,7 +43,7 @@ export class AuthService {
   async login(dto: LoginDto): Promise<AuthTokenResponse> {
     const user = await this.usersService.findByEmailWithPassword(dto.email);
     if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException(this.i18n.t('auth.INVALID_CREDENTIALS'));
     }
 
     return this.issueToken(user);

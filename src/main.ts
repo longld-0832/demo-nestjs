@@ -6,7 +6,6 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Validate and transform incoming payloads; messages are translated by i18n.
   app.useGlobalPipes(
     new I18nValidationPipe({
       whitelist: true,
@@ -17,7 +16,6 @@ async function bootstrap() {
     new I18nValidationExceptionFilter({ detailedErrors: false }),
   );
 
-  // Swagger / OpenAPI docs available at /docs
   const config = new DocumentBuilder()
     .setTitle('Demo NestJS API')
     .setDescription('Base API with Swagger and i18n support')

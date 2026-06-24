@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /home/ly.duc.long@sun-asterisk.com/Project/demo-nestjs *)",
+      "Bash(docker start *)",
+      "Bash(docker exec *)",
+      "Bash(npm run *)",
+      "Bash(npx eslint *)",
+      "Bash(echo \"eslint exit $?\")"
+    ],
+    "additionalDirectories": [
+      "/home/ly.duc.long@sun-asterisk.com/Project/demo-nestjs"
+    ]
+  }
+}

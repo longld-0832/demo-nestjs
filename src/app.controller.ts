@@ -1,5 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AppService } from './app.service';
 
 @ApiTags('app')
@@ -17,7 +22,9 @@ export class AppController {
   @Get('greet')
   @ApiOperation({ summary: 'Localized greeting with interpolation' })
   @ApiQuery({ name: 'name', required: false, example: 'Long' })
-  @ApiOkResponse({ description: 'A personalized greeting in the resolved language.' })
+  @ApiOkResponse({
+    description: 'A personalized greeting in the resolved language.',
+  })
   greet(@Query('name') name = 'World'): string {
     return this.appService.greet(name);
   }

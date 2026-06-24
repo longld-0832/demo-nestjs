@@ -9,12 +9,15 @@ import {
 } from 'nestjs-i18n';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    DatabaseModule,
     I18nModule.forRoot({
       fallbackLanguage: process.env.FALLBACK_LANGUAGE ?? 'en',
       loaderOptions: {
@@ -27,6 +30,7 @@ import { AppService } from './app.service';
         AcceptLanguageResolver,
       ],
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

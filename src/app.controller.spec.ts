@@ -14,7 +14,7 @@ describe('AppController', () => {
         {
           provide: I18nService,
           useValue: {
-            t: (key: string, options?: { args?: Record<string, unknown> }) =>
+            t: (key: string, options?: { args?: { name?: string } }) =>
               key === 'app.HELLO'
                 ? 'Hello World!'
                 : `Hello, ${options?.args?.name}!`,

@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { I18nService } from 'nestjs-i18n';
 import { User } from '../database/entities';
 import { UsersService } from '../users/users.service';
-import { AuthTokenResponse, JwtPayload } from './auth.types';
+import { AuthTokenResponse, JwtPayload, LogoutResponse } from './auth.types';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -47,6 +47,10 @@ export class AuthService {
     }
 
     return this.issueToken(user);
+  }
+
+  logout(): LogoutResponse {
+    return { message: this.i18n.t('auth.LOGOUT_SUCCESS') };
   }
 
   private issueToken(user: User): AuthTokenResponse {

@@ -8,3 +8,7 @@ export interface AuthTokenResponse {
   tokenType: 'Bearer';
   expiresIn: string;
 }
+
+export interface LogoutResponse {
+  message: string;
+}

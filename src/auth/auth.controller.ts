@@ -19,6 +19,7 @@ import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
 import { LoginDto } from './dto/login.dto';
+import { LogoutResponseDto } from './dto/logout-response.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
@@ -48,6 +49,20 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Invalid email or password.' })
   login(@Body() dto: LoginDto): Promise<AuthTokenResponseDto> {
     return this.authService.login(dto);
+  }
+
+  @Post('logout')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Log out the currently authenticated user' })
+  @ApiOkResponse({
+    description: 'Logout acknowledged; discard the access token client-side.',
+    type: LogoutResponseDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token.' })
+  logout(): LogoutResponseDto {
+    return this.authService.logout();
   }
 
   @Get('me')

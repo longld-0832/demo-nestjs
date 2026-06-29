@@ -6,7 +6,11 @@
       "Bash(docker exec *)",
       "Bash(npm run *)",
       "Bash(npx eslint *)",
-      "Bash(echo \"eslint exit $?\")"
+      "Bash(echo \"eslint exit $?\")",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(echo \"=== TSC EXIT: $? ===\")",
+      "Bash(echo \"=== ESLINT EXIT: $? ===\")"
     ],
     "additionalDirectories": [
       "/home/ly.duc.long@sun-asterisk.com/Project/demo-nestjs"

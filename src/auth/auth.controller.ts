@@ -16,6 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { User } from '../database/entities';
 import { AuthService } from './auth.service';
+import { AccessToken } from './decorators/access-token.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
 import { LoginDto } from './dto/login.dto';
@@ -61,8 +62,8 @@ export class AuthController {
     type: LogoutResponseDto,
   })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token.' })
-  logout(): LogoutResponseDto {
-    return this.authService.logout();
+  logout(@AccessToken() token: string): Promise<LogoutResponseDto> {
+    return this.authService.logout(token);
   }
 
   @Get('me')

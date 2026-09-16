@@ -6,10 +6,12 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import { I18nService } from 'nestjs-i18n';
 import { User } from '../database/entities';
+import { TokenBlacklistService } from '../redis/token-blacklist.service';
 import { UsersService } from '../users/users.service';
-import { AuthTokenResponse, JwtPayload } from './auth.types';
+import { AuthTokenResponse, JwtPayload, LogoutResponse } from './auth.types';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -22,6 +24,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
     private readonly i18n: I18nService,
+    private readonly tokenBlacklist: TokenBlacklistService,
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthTokenResponse> {
@@ -49,10 +52,19 @@ export class AuthService {
     return this.issueToken(user);
   }
 
+  async logout(token: string): Promise<LogoutResponse> {
+    const payload = this.jwtService.decode<JwtPayload | null>(token);
+    if (payload?.jti && payload.exp) {
+      const ttl = payload.exp - Math.floor(Date.now() / 1000);
+      await this.tokenBlacklist.add(payload.jti, ttl);
+    }
+    return { message: this.i18n.t('auth.LOGOUT_SUCCESS') };
+  }
+
   private issueToken(user: User): AuthTokenResponse {
     const payload: JwtPayload = { sub: user.id, email: user.email };
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload, { jwtid: randomUUID() }),
       tokenType: 'Bearer',
       expiresIn: this.config.get<string>('JWT_EXPIRES_IN', '1h'),
     };

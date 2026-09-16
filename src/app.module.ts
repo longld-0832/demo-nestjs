@@ -11,6 +11,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DatabaseModule } from './database/database.module';
       isGlobal: true,
     }),
     DatabaseModule,
+    RedisModule,
     I18nModule.forRoot({
       fallbackLanguage: process.env.FALLBACK_LANGUAGE ?? 'en',
       loaderOptions: {

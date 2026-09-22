@@ -11,7 +11,9 @@ import { User } from '../database/entities';
 
 export interface CreateUserData {
   email: string;
-  username: string;
+  name: string;
+  phoneNumber: string;
+  acceptTerms: boolean;
   passwordHash: string;
 }
 
@@ -35,10 +37,14 @@ export class UsersService {
     return this.users.findOne({ where: { email } });
   }
 
+  findByPhoneNumber(phoneNumber: string): Promise<User | null> {
+    return this.users.findOne({ where: { phoneNumber } });
+  }
+
   findByEmailWithPassword(email: string): Promise<User | null> {
     return this.users.findOne({
       where: { email },
-      select: { id: true, email: true, username: true, passwordHash: true },
+      select: { id: true, email: true, name: true, passwordHash: true },
     });
   }
 

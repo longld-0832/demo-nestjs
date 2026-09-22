@@ -35,7 +35,9 @@ export class AuthController {
     description: 'Account created; returns an access token.',
     type: AuthTokenResponseDto,
   })
-  @ApiConflictResponse({ description: 'Email is already registered.' })
+  @ApiConflictResponse({
+    description: 'Email or phone number is already registered.',
+  })
   register(@Body() dto: RegisterDto): Promise<AuthTokenResponseDto> {
     return this.authService.register(dto);
   }

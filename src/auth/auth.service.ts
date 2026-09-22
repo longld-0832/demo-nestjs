@@ -28,15 +28,26 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthTokenResponse> {
+    console.log('register dto', dto);
+
     const existing = await this.usersService.findByEmail(dto.email);
     if (existing) {
       throw new ConflictException(this.i18n.t('auth.EMAIL_ALREADY_REGISTERED'));
     }
 
+    const existingPhone = await this.usersService.findByPhoneNumber(
+      dto.phoneNumber,
+    );
+    if (existingPhone) {
+      throw new ConflictException(this.i18n.t('auth.PHONE_ALREADY_REGISTERED'));
+    }
+
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
     const user = await this.usersService.create({
       email: dto.email,
-      username: dto.username,
+      name: dto.name,
+      phoneNumber: dto.phoneNumber,
+      acceptTerms: dto.acceptTerms,
       passwordHash,
     });
 

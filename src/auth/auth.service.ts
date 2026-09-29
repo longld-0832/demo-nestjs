@@ -35,10 +35,10 @@ export class AuthService {
       throw new ConflictException(this.i18n.t('auth.EMAIL_ALREADY_REGISTERED'));
     }
 
-    const existingPhone = await this.usersService.findByPhoneNumber(
+    const phoneTaken = await this.usersService.existsByPhoneNumber(
       dto.phoneNumber,
     );
-    if (existingPhone) {
+    if (phoneTaken) {
       throw new ConflictException(this.i18n.t('auth.PHONE_ALREADY_REGISTERED'));
     }
 

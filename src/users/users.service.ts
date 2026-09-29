@@ -8,12 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { I18nService } from 'nestjs-i18n';
 import { QueryFailedError, Repository } from 'typeorm';
 import { User } from '../database/entities';
-
-export interface CreateUserData {
-  email: string;
-  username: string;
-  passwordHash: string;
-}
+import { CreateUserData } from './users.types';
 
 const PG_UNIQUE_VIOLATION = '23505';
 
@@ -35,10 +30,14 @@ export class UsersService {
     return this.users.findOne({ where: { email } });
   }
 
+  existsByPhoneNumber(phoneNumber: string): Promise<boolean> {
+    return this.users.existsBy({ phoneNumber });
+  }
+
   findByEmailWithPassword(email: string): Promise<User | null> {
     return this.users.findOne({
       where: { email },
-      select: { id: true, email: true, username: true, passwordHash: true },
+      select: { id: true, email: true, name: true, passwordHash: true },
     });
   }
 

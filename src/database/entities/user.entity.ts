@@ -10,9 +10,17 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   email: string;
 
-  @ApiProperty({ example: 'alice' })
+  @ApiProperty({ example: 'Alice Nguyen' })
   @Column()
-  username: string;
+  name: string;
+
+  @ApiProperty({ example: '0912345678' })
+  @Column({ name: 'phone_number' })
+  phoneNumber: string;
+
+  @ApiProperty({ default: false })
+  @Column({ name: 'accept_terms', default: false })
+  acceptTerms: boolean;
 
   @Column({ name: 'password_hash', select: false })
   passwordHash: string;

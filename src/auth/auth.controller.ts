@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiConflictResponse,
@@ -14,10 +7,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { User } from '../database/entities';
 import { AuthService } from './auth.service';
 import { AccessToken } from './decorators/access-token.decorator';
-import { CurrentUser } from './decorators/current-user.decorator';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { LogoutResponseDto } from './dto/logout-response.dto';
@@ -66,15 +57,5 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token.' })
   logout(@AccessToken() token: string): Promise<LogoutResponseDto> {
     return this.authService.logout(token);
-  }
-
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get the currently authenticated user' })
-  @ApiOkResponse({ description: 'The authenticated user.', type: User })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token.' })
-  me(@CurrentUser() user: User): User {
-    return user;
   }
 }

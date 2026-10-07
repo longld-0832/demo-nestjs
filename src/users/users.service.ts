@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { I18nService } from 'nestjs-i18n';
@@ -32,6 +33,24 @@ export class UsersService {
 
   existsByPhoneNumber(phoneNumber: string): Promise<boolean> {
     return this.users.existsBy({ phoneNumber });
+  }
+
+  async getCurrentUser(id: string): Promise<User> {
+    const user = await this.users.findOne({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phoneNumber: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   findByEmailWithPassword(email: string): Promise<User | null> {

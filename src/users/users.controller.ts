@@ -20,7 +20,6 @@ export class UsersController {
   @ApiOkResponse({ description: 'Current user information.', type: User })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token.' })
   async getCurrentUser(@Req() req: { user: User }): Promise<User> {
-    const user = await this.usersService.getCurrentUser(req.user.id);
-    return user;
+    return await this.usersService.getCurrentUser(req.user.id);
   }
 }

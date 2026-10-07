@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { I18nService } from 'nestjs-i18n';
-import { QueryFailedError, Repository } from 'typeorm';
-import { User } from '../database/entities';
-import { CreateUserData } from './users.types';
+import { Not, QueryFailedError, Repository } from 'typeorm';
+import { Profile, User } from '../database/entities';
+import { CreateUserData, UpdateProfileData } from './users.types';
 
 const PG_UNIQUE_VIOLATION = '23505';
 
@@ -75,6 +75,57 @@ export class UsersService {
       }
       this.logger.error(
         'Failed to save user',
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        this.i18n.t('common.DATABASE_ERROR'),
+      );
+    }
+  }
+
+  async updateProfile(id: string, data: UpdateProfileData): Promise<User> {
+    const user = await this.users.findOne({
+      where: { id },
+      relations: { profile: true },
+    });
+    if (!user) {
+      throw new NotFoundException(this.i18n.t('user.USER_NOT_FOUND'));
+    }
+
+    if (data.phoneNumber && data.phoneNumber !== user.phoneNumber) {
+      const phoneTaken = await this.users.existsBy({
+        phoneNumber: data.phoneNumber,
+        id: Not(id),
+      });
+      if (phoneTaken) {
+        throw new ConflictException(
+          this.i18n.t('auth.PHONE_ALREADY_REGISTERED'),
+        );
+      }
+    }
+
+    const { name, phoneNumber, fullName, bio, avatarUrl } = data;
+    try {
+      return await this.users.manager.transaction(async (manager) => {
+        if (name !== undefined || phoneNumber !== undefined) {
+          await manager.update(User, id, { name, phoneNumber });
+        }
+
+        const profile = manager.merge(
+          Profile,
+          user.profile ?? manager.create(Profile, { user: { id } }),
+          { fullName, bio, avatarUrl },
+        );
+        await manager.save(Profile, profile);
+
+        return manager.findOneOrFail(User, {
+          where: { id },
+          relations: { profile: true },
+        });
+      });
+    } catch (error) {
+      this.logger.error(
+        'Failed to update user profile',
         error instanceof Error ? error.stack : String(error),
       );
       throw new InternalServerErrorException(

@@ -29,6 +29,7 @@ export class User extends BaseEntity {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
+  @ApiProperty({ type: () => Profile, required: false })
   @OneToOne(() => Profile, (profile) => profile.user, {
     cascade: true,
     nullable: true,

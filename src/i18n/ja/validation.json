@@ -4,5 +4,6 @@
   "MIN_LENGTH": "{property}は{constraints.0}文字以上である必要があります",
   "MAX_LENGTH": "{property}は{constraints.0}文字以下である必要があります",
   "IS_PHONE_NUMBER": "{property}は10桁または11桁の数字である必要があります",
-  "IS_URL": "{property}は有効なURLである必要があります"
+  "IS_URL": "{property}は有効なURLである必要があります",
+  "IS_UUID": "{property}は有効なUUIDである必要があります"
 }

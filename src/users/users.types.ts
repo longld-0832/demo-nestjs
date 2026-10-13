@@ -5,3 +5,10 @@ export interface CreateUserData {
   acceptTerms: boolean;
   passwordHash: string;
 }
+
+export interface UpdateProfileData {
+  name?: string;
+  phoneNumber?: string;
+  fullName?: string;
+  bio?: string;
+}

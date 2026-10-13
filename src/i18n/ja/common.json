@@ -1,3 +1,4 @@
 {
-  "DATABASE_ERROR": "データベースエラーが発生しました"
+  "DATABASE_ERROR": "データベースエラーが発生しました",
+  "FILE_STORAGE_ERROR": "ファイルの保存中にエラーが発生しました"
 }

@@ -1,10 +1,21 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
 import { AppModule } from './app.module';
+import {
+  PUBLIC_DIR,
+  PUBLIC_URL_PREFIX,
+} from './attachments/attachments.constants';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.useStaticAssets(PUBLIC_DIR, {
+    prefix: PUBLIC_URL_PREFIX,
+    index: false,
+    dotfiles: 'deny',
+  });
 
   app.useGlobalPipes(
     new I18nValidationPipe({

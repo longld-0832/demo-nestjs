@@ -7,9 +7,15 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { I18nService } from 'nestjs-i18n';
-import { QueryFailedError, Repository } from 'typeorm';
-import { User } from '../database/entities';
-import { CreateUserData } from './users.types';
+import { Not, QueryFailedError, Repository } from 'typeorm';
+import {
+  AVATAR_FOLDER,
+  AVATAR_MAX_SIZE,
+} from '../attachments/attachments.constants';
+import { AttachmentsService } from '../attachments/attachments.service';
+import { Attachment, Profile, User } from '../database/entities';
+import { AttachableType } from '../database/enums/attachable-type.enum';
+import { CreateUserData, UpdateProfileData } from './users.types';
 
 const PG_UNIQUE_VIOLATION = '23505';
 
@@ -21,6 +27,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly users: Repository<User>,
     private readonly i18n: I18nService,
+    private readonly attachmentsService: AttachmentsService,
   ) {}
 
   findById(id: string): Promise<User | null> {
@@ -81,5 +88,137 @@ export class UsersService {
         this.i18n.t('common.DATABASE_ERROR'),
       );
     }
+  }
+
+  async updateProfile(id: string, data: UpdateProfileData): Promise<User> {
+    const user = await this.findByIdWithProfileOrFail(id);
+
+    if (data.phoneNumber && data.phoneNumber !== user.phoneNumber) {
+      const phoneTaken = await this.users.existsBy({
+        phoneNumber: data.phoneNumber,
+        id: Not(id),
+      });
+      if (phoneTaken) {
+        throw new ConflictException(
+          this.i18n.t('auth.PHONE_ALREADY_REGISTERED'),
+        );
+      }
+    }
+
+    const { name, phoneNumber, fullName, bio } = data;
+    try {
+      return await this.users.manager.transaction(async (manager) => {
+        if (name !== undefined || phoneNumber !== undefined) {
+          await manager.update(User, id, { name, phoneNumber });
+        }
+
+        const profile = manager.merge(
+          Profile,
+          user.profile ?? manager.create(Profile, { user: { id } }),
+          { fullName, bio },
+        );
+        await manager.save(Profile, profile);
+
+        return manager.findOneOrFail(User, {
+          where: { id },
+          relations: { profile: true },
+        });
+      });
+    } catch (error) {
+      this.logger.error(
+        'Failed to update user profile',
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        this.i18n.t('common.DATABASE_ERROR'),
+      );
+    }
+  }
+
+  /**
+   * Stores the uploaded image in the public folder, records it as the
+   * profile's attachment and replaces the previous avatar (row and file).
+   */
+  async updateAvatar(
+    id: string,
+    file: Express.Multer.File | undefined,
+  ): Promise<User> {
+    const imageType = this.attachmentsService.validateImage(
+      file,
+      AVATAR_MAX_SIZE,
+    );
+
+    const user = await this.findByIdWithProfileOrFail(id);
+
+    const stored = await this.attachmentsService.storePublicImage(
+      file as Express.Multer.File,
+      imageType,
+      AVATAR_FOLDER,
+    );
+
+    let oldAttachments: Attachment[] = [];
+    let updated: User;
+    try {
+      updated = await this.users.manager.transaction(async (manager) => {
+        const profile =
+          user.profile ??
+          (await manager.save(
+            Profile,
+            manager.create(Profile, { user: { id } }),
+          ));
+
+        oldAttachments = await manager.find(Attachment, {
+          where: {
+            attachableType: AttachableType.PROFILE,
+            attachableId: profile.id,
+          },
+        });
+        if (oldAttachments.length) {
+          await manager.delete(
+            Attachment,
+            oldAttachments.map((attachment) => attachment.id),
+          );
+        }
+
+        await manager.insert(Attachment, {
+          ...stored,
+          attachableType: AttachableType.PROFILE,
+          attachableId: profile.id,
+        });
+        await manager.update(Profile, profile.id, { avatarUrl: stored.url });
+
+        return manager.findOneOrFail(User, {
+          where: { id },
+          relations: { profile: true },
+        });
+      });
+    } catch (error) {
+      await this.attachmentsService.removePublicFile(stored.url);
+      this.logger.error(
+        'Failed to update user avatar',
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException(
+        this.i18n.t('common.DATABASE_ERROR'),
+      );
+    }
+
+    await Promise.all(
+      oldAttachments.map((attachment) =>
+        this.attachmentsService.removePublicFile(attachment.url),
+      ),
+    );
+    return updated;
+  }
+
+  private async findByIdWithProfileOrFail(id: string): Promise<User> {
+    const user = await this.users.findOne({
+      where: { id },
+      relations: { profile: true },
+    });
+    if (!user) {
+      throw new NotFoundException(this.i18n.t('user.USER_NOT_FOUND'));
+    }
+    return user;
   }
 }

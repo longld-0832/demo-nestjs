@@ -1,3 +1,4 @@
 {
-  "DATABASE_ERROR": "An unexpected database error occurred"
+  "DATABASE_ERROR": "An unexpected database error occurred",
+  "FILE_STORAGE_ERROR": "An unexpected error occurred while storing the file"
 }

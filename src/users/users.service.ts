@@ -13,12 +13,8 @@ import {
   AVATAR_MAX_SIZE,
 } from '../attachments/attachments.constants';
 import { AttachmentsService } from '../attachments/attachments.service';
-import {
-  AttachableType,
-  Attachment,
-  Profile,
-  User,
-} from '../database/entities';
+import { Attachment, Profile, User } from '../database/entities';
+import { AttachableType } from '../database/enums/attachable-type.enum';
 import { CreateUserData, UpdateProfileData } from './users.types';
 
 const PG_UNIQUE_VIOLATION = '23505';
@@ -95,13 +91,7 @@ export class UsersService {
   }
 
   async updateProfile(id: string, data: UpdateProfileData): Promise<User> {
-    const user = await this.users.findOne({
-      where: { id },
-      relations: { profile: true },
-    });
-    if (!user) {
-      throw new NotFoundException(this.i18n.t('user.USER_NOT_FOUND'));
-    }
+    const user = await this.findByIdWithProfileOrFail(id);
 
     if (data.phoneNumber && data.phoneNumber !== user.phoneNumber) {
       const phoneTaken = await this.users.existsBy({
@@ -158,13 +148,7 @@ export class UsersService {
       AVATAR_MAX_SIZE,
     );
 
-    const user = await this.users.findOne({
-      where: { id },
-      relations: { profile: true },
-    });
-    if (!user) {
-      throw new NotFoundException(this.i18n.t('user.USER_NOT_FOUND'));
-    }
+    const user = await this.findByIdWithProfileOrFail(id);
 
     const stored = await this.attachmentsService.storePublicImage(
       file as Express.Multer.File,
@@ -225,5 +209,16 @@ export class UsersService {
       ),
     );
     return updated;
+  }
+
+  private async findByIdWithProfileOrFail(id: string): Promise<User> {
+    const user = await this.users.findOne({
+      where: { id },
+      relations: { profile: true },
+    });
+    if (!user) {
+      throw new NotFoundException(this.i18n.t('user.USER_NOT_FOUND'));
+    }
+    return user;
   }
 }

@@ -1,11 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, Index } from 'typeorm';
+import { AttachableType } from '../enums/attachable-type.enum';
 import { BaseEntity } from './base.entity';
-
-/** Owner types an attachment can belong to (polymorphic relation). */
-export enum AttachableType {
-  PROFILE = 'Profile',
-}
 
 @Entity('attachments')
 @Index(['attachableType', 'attachableId'])

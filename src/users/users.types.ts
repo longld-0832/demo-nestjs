@@ -11,5 +11,4 @@ export interface UpdateProfileData {
   phoneNumber?: string;
   fullName?: string;
   bio?: string;
-  avatarUrl?: string;
 }

@@ -1,0 +1,5 @@
+{
+  "FILE_REQUIRED": "ファイルは必須です",
+  "INVALID_IMAGE_TYPE": "JPEG、PNG、WEBP形式の画像のみアップロードできます",
+  "FILE_TOO_LARGE": "ファイルサイズは{maxSize}MB以下である必要があります"
+}

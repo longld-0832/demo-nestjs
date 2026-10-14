@@ -1,0 +1,7 @@
+{
+  "FOLLOW_SUCCESS": "フォローしました",
+  "UNFOLLOW_SUCCESS": "フォローを解除しました",
+  "CANNOT_FOLLOW_YOURSELF": "自分自身をフォローすることはできません",
+  "ALREADY_FOLLOWING": "このユーザーは既にフォローしています",
+  "NOT_FOLLOWING": "このユーザーをフォローしていません"
+}

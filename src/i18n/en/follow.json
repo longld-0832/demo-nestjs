@@ -1,0 +1,7 @@
+{
+  "FOLLOW_SUCCESS": "Followed successfully",
+  "UNFOLLOW_SUCCESS": "Unfollowed successfully",
+  "CANNOT_FOLLOW_YOURSELF": "You cannot follow yourself",
+  "ALREADY_FOLLOWING": "You are already following this user",
+  "NOT_FOLLOWING": "You are not following this user"
+}

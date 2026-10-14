@@ -36,8 +36,8 @@ export class FollowsService {
       );
     }
 
-    const target = await this.usersService.findById(followingId);
-    if (!target || !target.isActive) {
+    const targetExists = await this.usersService.existsActiveById(followingId);
+    if (!targetExists) {
       throw new NotFoundException(this.i18n.t('user.USER_NOT_FOUND'));
     }
 

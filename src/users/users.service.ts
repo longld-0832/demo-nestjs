@@ -42,6 +42,10 @@ export class UsersService {
     return this.users.existsBy({ phoneNumber });
   }
 
+  existsActiveById(id: string): Promise<boolean> {
+    return this.users.existsBy({ id, isActive: true });
+  }
+
   async getCurrentUser(id: string): Promise<User> {
     const user = await this.users.findOne({
       where: { id },

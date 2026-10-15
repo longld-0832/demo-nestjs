@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Patch,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -35,11 +34,12 @@ export class UsersController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get the current logged in user' })
   @ApiOkResponse({ description: 'Current user information.', type: User })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token.' })
-  async getCurrentUser(@Req() req: { user: User }): Promise<User> {
-    return await this.usersService.getCurrentUser(req.user.id);
+  async getCurrentUser(@CurrentUser() user: User): Promise<User> {
+    return await this.usersService.getCurrentUser(user.id);
   }
 
   @Patch('me/profile')

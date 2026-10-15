@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import { Article } from './article.entity';
 import { BaseEntity } from './base.entity';
-import { Post } from './post.entity';
 import { Profile } from './profile.entity';
 
 @Entity('users')
@@ -36,6 +36,6 @@ export class User extends BaseEntity {
   })
   profile: Profile;
 
-  @OneToMany(() => Post, (post) => post.author)
-  posts: Post[];
+  @OneToMany(() => Article, (article) => article.author)
+  articles: Article[];
 }

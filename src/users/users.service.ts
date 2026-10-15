@@ -1,23 +1,24 @@
 import {
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { I18nService } from 'nestjs-i18n';
-import { Not, QueryFailedError, Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import {
   AVATAR_FOLDER,
   AVATAR_MAX_SIZE,
 } from '../attachments/attachments.constants';
 import { AttachmentsService } from '../attachments/attachments.service';
+import {
+  isUniqueViolation,
+  throwDatabaseError,
+} from '../common/utils/database-error.util';
 import { Attachment, Profile, User } from '../database/entities';
 import { AttachableType } from '../database/enums/attachable-type.enum';
 import { CreateUserData, UpdateProfileData } from './users.types';
-
-const PG_UNIQUE_VIOLATION = '23505';
 
 @Injectable()
 export class UsersService {
@@ -30,12 +31,16 @@ export class UsersService {
     private readonly attachmentsService: AttachmentsService,
   ) {}
 
-  findById(id: string): Promise<User | null> {
-    return this.users.findOne({ where: { id } });
+  /** Loads only the columns needed to authenticate a request. */
+  findActiveAuthUser(id: string): Promise<User | null> {
+    return this.users.findOne({
+      where: { id, isActive: true },
+      select: { id: true, email: true, name: true },
+    });
   }
 
-  findByEmail(email: string): Promise<User | null> {
-    return this.users.findOne({ where: { email } });
+  existsByEmail(email: string): Promise<boolean> {
+    return this.users.existsBy({ email });
   }
 
   existsByPhoneNumber(phoneNumber: string): Promise<boolean> {
@@ -59,7 +64,7 @@ export class UsersService {
       },
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(this.i18n.t('user.USER_NOT_FOUND'));
     }
     return user;
   }
@@ -76,21 +81,12 @@ export class UsersService {
     try {
       return await this.users.save(user);
     } catch (error) {
-      if (
-        error instanceof QueryFailedError &&
-        (error.driverError as { code?: string }).code === PG_UNIQUE_VIOLATION
-      ) {
+      if (isUniqueViolation(error)) {
         throw new ConflictException(
           this.i18n.t('auth.EMAIL_ALREADY_REGISTERED'),
         );
       }
-      this.logger.error(
-        'Failed to save user',
-        error instanceof Error ? error.stack : String(error),
-      );
-      throw new InternalServerErrorException(
-        this.i18n.t('common.DATABASE_ERROR'),
-      );
+      throwDatabaseError(error, this.logger, this.i18n, 'Failed to save user');
     }
   }
 
@@ -129,12 +125,11 @@ export class UsersService {
         });
       });
     } catch (error) {
-      this.logger.error(
+      throwDatabaseError(
+        error,
+        this.logger,
+        this.i18n,
         'Failed to update user profile',
-        error instanceof Error ? error.stack : String(error),
-      );
-      throw new InternalServerErrorException(
-        this.i18n.t('common.DATABASE_ERROR'),
       );
     }
   }
@@ -198,12 +193,11 @@ export class UsersService {
       });
     } catch (error) {
       await this.attachmentsService.removePublicFile(stored.url);
-      this.logger.error(
+      throwDatabaseError(
+        error,
+        this.logger,
+        this.i18n,
         'Failed to update user avatar',
-        error instanceof Error ? error.stack : String(error),
-      );
-      throw new InternalServerErrorException(
-        this.i18n.t('common.DATABASE_ERROR'),
       );
     }
 

@@ -2,18 +2,19 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { I18nService } from 'nestjs-i18n';
-import { QueryFailedError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import {
+  isUniqueViolation,
+  throwDatabaseError,
+} from '../common/utils/database-error.util';
 import { Follow } from '../database/entities';
 import { UsersService } from '../users/users.service';
 import { FollowResponse } from './follows.types';
-
-const PG_UNIQUE_VIOLATION = '23505';
 
 @Injectable()
 export class FollowsService {
@@ -53,18 +54,14 @@ export class FollowsService {
       await this.follows.insert({ followerId, followingId });
     } catch (error) {
       // Two concurrent follow requests can both pass the check above.
-      if (
-        error instanceof QueryFailedError &&
-        (error.driverError as { code?: string }).code === PG_UNIQUE_VIOLATION
-      ) {
+      if (isUniqueViolation(error)) {
         throw new ConflictException(this.i18n.t('follow.ALREADY_FOLLOWING'));
       }
-      this.logger.error(
+      throwDatabaseError(
+        error,
+        this.logger,
+        this.i18n,
         'Failed to follow user',
-        error instanceof Error ? error.stack : String(error),
-      );
-      throw new InternalServerErrorException(
-        this.i18n.t('common.DATABASE_ERROR'),
       );
     }
 
@@ -79,12 +76,11 @@ export class FollowsService {
     try {
       ({ affected } = await this.follows.delete({ followerId, followingId }));
     } catch (error) {
-      this.logger.error(
+      throwDatabaseError(
+        error,
+        this.logger,
+        this.i18n,
         'Failed to unfollow user',
-        error instanceof Error ? error.stack : String(error),
-      );
-      throw new InternalServerErrorException(
-        this.i18n.t('common.DATABASE_ERROR'),
       );
     }
 

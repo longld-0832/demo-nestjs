@@ -14,6 +14,7 @@ import { UsersService } from '../users/users.service';
 import { AuthTokenResponse, JwtPayload, LogoutResponse } from './auth.types';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { TokenType } from './enums/token-type.enum';
 
 const SALT_ROUNDS = 10;
 
@@ -28,10 +29,8 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthTokenResponse> {
-    console.log('register dto', dto);
-
-    const existing = await this.usersService.findByEmail(dto.email);
-    if (existing) {
+    const emailTaken = await this.usersService.existsByEmail(dto.email);
+    if (emailTaken) {
       throw new ConflictException(this.i18n.t('auth.EMAIL_ALREADY_REGISTERED'));
     }
 
@@ -76,7 +75,7 @@ export class AuthService {
     const payload: JwtPayload = { sub: user.id, email: user.email };
     return {
       accessToken: this.jwtService.sign(payload, { jwtid: randomUUID() }),
-      tokenType: 'Bearer',
+      tokenType: TokenType.BEARER,
       expiresIn: this.config.get<string>('JWT_EXPIRES_IN', '1h'),
     };
   }

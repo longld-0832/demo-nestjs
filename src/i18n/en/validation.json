@@ -5,5 +5,7 @@
   "MAX_LENGTH": "{property} must be at most {constraints.0} characters long",
   "IS_PHONE_NUMBER": "{property} must be 10 or 11 digits",
   "IS_URL": "{property} must be a valid URL",
-  "IS_UUID": "{property} must be a valid UUID"
+  "IS_UUID": "{property} must be a valid UUID",
+  "IS_NOT_EMPTY": "{property} should not be empty",
+  "IS_BOOLEAN": "{property} must be a boolean"
 }

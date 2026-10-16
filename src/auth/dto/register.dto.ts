@@ -21,8 +21,10 @@ export class RegisterDto {
   email: string;
 
   @ApiProperty({ example: '0912345678' })
-  @IsString({ message: 'phone number must be a string' })
-  @Matches(/^[0-9]{10,11}$/, { message: 'phone number is not valid' })
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @Matches(/^[0-9]{10,11}$/, {
+    message: i18nValidationMessage('validation.IS_PHONE_NUMBER'),
+  })
   phoneNumber: string;
 
   @ApiProperty({ example: 'P@ssw0rd!', minLength: 8 })
@@ -32,6 +34,6 @@ export class RegisterDto {
   password: string;
 
   @ApiProperty({ example: true })
-  @IsBoolean({ message: 'accept terms must be a boolean' })
+  @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   acceptTerms: boolean;
 }

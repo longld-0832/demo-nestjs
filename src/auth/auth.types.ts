@@ -1,3 +1,5 @@
+import { TokenType } from './enums/token-type.enum';
+
 export interface JwtPayload {
   sub: string;
   email: string;
@@ -9,7 +11,7 @@ export interface JwtPayload {
 
 export interface AuthTokenResponse {
   accessToken: string;
-  tokenType: 'Bearer';
+  tokenType: TokenType;
   expiresIn: string;
 }
 

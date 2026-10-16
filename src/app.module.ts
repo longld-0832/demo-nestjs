@@ -9,6 +9,7 @@ import {
 } from 'nestjs-i18n';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ArticlesModule } from './articles/articles.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { FollowsModule } from './follows/follows.module';
@@ -35,6 +36,7 @@ import { RedisModule } from './redis/redis.module';
     }),
     AuthModule,
     FollowsModule,
+    ArticlesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

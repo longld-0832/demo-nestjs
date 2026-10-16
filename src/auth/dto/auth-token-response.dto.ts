@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AuthTokenResponse } from '../auth.types';
+import { TokenType } from '../enums/token-type.enum';
 
 export class AuthTokenResponseDto implements AuthTokenResponse {
   @ApiProperty({
@@ -8,8 +9,8 @@ export class AuthTokenResponseDto implements AuthTokenResponse {
   })
   accessToken: string;
 
-  @ApiProperty({ example: 'Bearer', enum: ['Bearer'] })
-  tokenType: 'Bearer';
+  @ApiProperty({ example: TokenType.BEARER, enum: TokenType })
+  tokenType: TokenType;
 
   @ApiProperty({
     description: 'Token lifetime (matches JWT_EXPIRES_IN).',

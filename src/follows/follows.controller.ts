@@ -18,9 +18,9 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { IdParamDto } from '../common/dto/id-param.dto';
 import { User } from '../database/entities';
 import { FollowResponseDto } from './dto/follow-response.dto';
-import { UserIdParamDto } from './dto/user-id-param.dto';
 import { FollowsService } from './follows.service';
 
 @ApiTags('follows')
@@ -42,7 +42,7 @@ export class FollowsController {
   @ApiConflictResponse({ description: 'Already following this user.' })
   follow(
     @CurrentUser() user: User,
-    @Param() params: UserIdParamDto,
+    @Param() params: IdParamDto,
   ): Promise<FollowResponseDto> {
     return this.followsService.follow(user.id, params.id);
   }
@@ -57,7 +57,7 @@ export class FollowsController {
   @ApiNotFoundResponse({ description: 'Not following this user.' })
   unfollow(
     @CurrentUser() user: User,
-    @Param() params: UserIdParamDto,
+    @Param() params: IdParamDto,
   ): Promise<FollowResponseDto> {
     return this.followsService.unfollow(user.id, params.id);
   }

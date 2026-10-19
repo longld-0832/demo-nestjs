@@ -7,5 +7,8 @@
   "IS_URL": "{property} must be a valid URL",
   "IS_UUID": "{property} must be a valid UUID",
   "IS_NOT_EMPTY": "{property} should not be empty",
-  "IS_BOOLEAN": "{property} must be a boolean"
+  "IS_BOOLEAN": "{property} must be a boolean",
+  "IS_INT": "{property} must be an integer",
+  "MIN": "{property} must not be less than {constraints.0}",
+  "MAX": "{property} must not be greater than {constraints.0}"
 }

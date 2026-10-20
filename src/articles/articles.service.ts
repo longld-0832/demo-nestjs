@@ -16,26 +16,15 @@ import {
 } from '../common/utils/pagination.util';
 import { Article } from '../database/entities';
 import {
+  ARTICLE_LIST_COLUMNS,
+  SLUG_MAX_BASE_LENGTH,
+} from './articles.constants';
+import {
   CreateArticleData,
   DeleteArticleResponse,
   ListArticlesFilter,
   UpdateArticleData,
 } from './articles.types';
-
-const SLUG_MAX_BASE_LENGTH = 100;
-
-/** Columns returned in lists; content is left out to keep responses small. */
-const LIST_COLUMNS = [
-  'article.id',
-  'article.slug',
-  'article.title',
-  'article.description',
-  'article.published',
-  'article.createdAt',
-  'article.updatedAt',
-  'author.id',
-  'author.name',
-];
 
 @Injectable()
 export class ArticlesService {
@@ -59,7 +48,7 @@ export class ArticlesService {
     const query = this.articles
       .createQueryBuilder('article')
       .innerJoin('article.author', 'author')
-      .select(LIST_COLUMNS)
+      .select(ARTICLE_LIST_COLUMNS)
       .orderBy('article.createdAt', 'DESC')
       .addOrderBy('article.id', 'DESC')
       .skip((page - 1) * limit)

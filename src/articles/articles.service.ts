@@ -8,15 +8,23 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
 import { I18nService } from 'nestjs-i18n';
 import { Repository } from 'typeorm';
+import { PaginatedResult } from '../common/types/pagination.types';
 import { throwDatabaseError } from '../common/utils/database-error.util';
+import {
+  escapeLikePattern,
+  toPaginatedResult,
+} from '../common/utils/pagination.util';
 import { Article } from '../database/entities';
+import {
+  ARTICLE_LIST_COLUMNS,
+  SLUG_MAX_BASE_LENGTH,
+} from './articles.constants';
 import {
   CreateArticleData,
   DeleteArticleResponse,
+  ListArticlesFilter,
   UpdateArticleData,
 } from './articles.types';
-
-const SLUG_MAX_BASE_LENGTH = 100;
 
 @Injectable()
 export class ArticlesService {
@@ -27,6 +35,63 @@ export class ArticlesService {
     private readonly articles: Repository<Article>,
     private readonly i18n: I18nService,
   ) {}
+
+  /**
+   * Lists published articles, newest first. When filtering by the current
+   * user's own id, their drafts are included too.
+   */
+  async findAll(
+    userId: string,
+    filter: ListArticlesFilter,
+  ): Promise<PaginatedResult<Article>> {
+    const { page, limit, author, search } = filter;
+    const query = this.articles
+      .createQueryBuilder('article')
+      .innerJoin('article.author', 'author')
+      .select(ARTICLE_LIST_COLUMNS)
+      .orderBy('article.createdAt', 'DESC')
+      .addOrderBy('article.id', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    if (author) {
+      query.andWhere('article.authorId = :author', { author });
+    }
+    if (author !== userId) {
+      query.andWhere('article.published = true');
+    }
+    if (search) {
+      query.andWhere('article.title ILIKE :search', {
+        search: `%${escapeLikePattern(search)}%`,
+      });
+    }
+
+    const [items, total] = await query.getManyAndCount();
+    return toPaginatedResult(items, total, page, limit);
+  }
+
+  /** Drafts are only visible to their author; others get a 404. */
+  async findOne(userId: string, id: string): Promise<Article> {
+    const article = await this.articles.findOne({
+      where: { id },
+      relations: { author: true },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        content: true,
+        published: true,
+        createdAt: true,
+        updatedAt: true,
+        author: { id: true, name: true },
+      },
+    });
+    if (!article || (!article.published && article.author.id !== userId)) {
+      throw new NotFoundException(this.i18n.t('article.ARTICLE_NOT_FOUND'));
+    }
+    return article;
+  }
 
   async create(authorId: string, data: CreateArticleData): Promise<Article> {
     const article = this.articles.create({

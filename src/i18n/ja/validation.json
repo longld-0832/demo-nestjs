@@ -7,5 +7,8 @@
   "IS_URL": "{property}は有効なURLである必要があります",
   "IS_UUID": "{property}は有効なUUIDである必要があります",
   "IS_NOT_EMPTY": "{property}は必須です",
-  "IS_BOOLEAN": "{property}は真偽値である必要があります"
+  "IS_BOOLEAN": "{property}は真偽値である必要があります",
+  "IS_INT": "{property}は整数である必要があります",
+  "MIN": "{property}は{constraints.0}以上である必要があります",
+  "MAX": "{property}は{constraints.0}以下である必要があります"
 }

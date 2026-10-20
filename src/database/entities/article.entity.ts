@@ -1,9 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 
 @Entity('articles')
+@Index(['authorId'])
+@Index(['createdAt'])
 export class Article extends BaseEntity {
   @ApiProperty({ example: 'my-first-article-3f9a1c' })
   @Column({ unique: true })

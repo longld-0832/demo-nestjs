@@ -1,5 +1,10 @@
 {
   "ARTICLE_NOT_FOUND": "記事が見つかりません",
   "NOT_ARTICLE_AUTHOR": "この記事を変更する権限がありません",
-  "DELETE_SUCCESS": "記事を削除しました"
+  "DELETE_SUCCESS": "記事を削除しました",
+  "FOLLOW_ARTICLE_SUCCESS": "記事をフォローしました",
+  "UNFOLLOW_ARTICLE_SUCCESS": "記事のフォローを解除しました",
+  "CANNOT_FOLLOW_OWN_ARTICLE": "自分の記事をフォローすることはできません",
+  "ALREADY_FOLLOWING_ARTICLE": "この記事は既にフォローしています",
+  "NOT_FOLLOWING_ARTICLE": "この記事をフォローしていません"
 }

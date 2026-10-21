@@ -1,3 +1,5 @@
+import { PaginationParams } from '../common/types/pagination.types';
+
 export interface CreateArticleData {
   title: string;
   description: string;
@@ -7,13 +9,7 @@ export interface CreateArticleData {
 
 export type UpdateArticleData = Partial<CreateArticleData>;
 
-export interface DeleteArticleResponse {
-  message: string;
-}
-
-export interface ListArticlesFilter {
-  page: number;
-  limit: number;
+export interface ListArticlesFilter extends PaginationParams {
   author?: string;
   search?: string;
 }

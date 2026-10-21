@@ -1,5 +1,10 @@
 {
   "ARTICLE_NOT_FOUND": "Article not found",
   "NOT_ARTICLE_AUTHOR": "You are not allowed to modify this article",
-  "DELETE_SUCCESS": "Article deleted successfully"
+  "DELETE_SUCCESS": "Article deleted successfully",
+  "FOLLOW_ARTICLE_SUCCESS": "Followed the article successfully",
+  "UNFOLLOW_ARTICLE_SUCCESS": "Unfollowed the article successfully",
+  "CANNOT_FOLLOW_OWN_ARTICLE": "You cannot follow your own article",
+  "ALREADY_FOLLOWING_ARTICLE": "You are already following this article",
+  "NOT_FOLLOWING_ARTICLE": "You are not following this article"
 }

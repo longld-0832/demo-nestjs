@@ -1,0 +1,5 @@
+{
+  "DELETE_SUCCESS": "コメントを削除しました",
+  "COMMENT_NOT_FOUND": "コメントが見つかりません",
+  "NOT_COMMENT_AUTHOR": "このコメントを削除する権限がありません"
+}

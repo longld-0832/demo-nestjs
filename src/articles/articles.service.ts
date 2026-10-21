@@ -7,21 +7,24 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
 import { I18nService } from 'nestjs-i18n';
-import { Repository } from 'typeorm';
-import { PaginatedResult } from '../common/types/pagination.types';
+import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
+import { MessageResponse } from '../common/types/message-response.types';
+import {
+  PaginatedResult,
+  PaginationParams,
+} from '../common/types/pagination.types';
 import { throwDatabaseError } from '../common/utils/database-error.util';
 import {
   escapeLikePattern,
   toPaginatedResult,
 } from '../common/utils/pagination.util';
-import { Article } from '../database/entities';
+import { Article, ArticleFollow, Follow } from '../database/entities';
 import {
   ARTICLE_LIST_COLUMNS,
   SLUG_MAX_BASE_LENGTH,
 } from './articles.constants';
 import {
   CreateArticleData,
-  DeleteArticleResponse,
   ListArticlesFilter,
   UpdateArticleData,
 } from './articles.types';
@@ -45,14 +48,7 @@ export class ArticlesService {
     filter: ListArticlesFilter,
   ): Promise<PaginatedResult<Article>> {
     const { page, limit, author, search } = filter;
-    const query = this.articles
-      .createQueryBuilder('article')
-      .innerJoin('article.author', 'author')
-      .select(ARTICLE_LIST_COLUMNS)
-      .orderBy('article.createdAt', 'DESC')
-      .addOrderBy('article.id', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit);
+    const query = this.buildListQuery({ page, limit }, 'createdAt');
 
     if (author) {
       query.andWhere('article.authorId = :author', { author });
@@ -65,6 +61,43 @@ export class ArticlesService {
         search: `%${escapeLikePattern(search)}%`,
       });
     }
+
+    const [items, total] = await query.getManyAndCount();
+    return toPaginatedResult(items, total, page, limit);
+  }
+
+  /**
+   * Published articles by users the current user follows, plus articles they
+   * follow directly. Sorted by last update so edits resurface in the feed.
+   */
+  async findFeed(
+    userId: string,
+    pagination: PaginationParams,
+  ): Promise<PaginatedResult<Article>> {
+    const { page, limit } = pagination;
+    const query = this.buildListQuery(pagination, 'updatedAt')
+      .andWhere('article.published = true')
+      .setParameter('userId', userId);
+
+    const followedAuthors = query
+      .subQuery()
+      .select('follow.followingId')
+      .from(Follow, 'follow')
+      .where('follow.followerId = :userId')
+      .getQuery();
+    const followedArticles = query
+      .subQuery()
+      .select('articleFollow.articleId')
+      .from(ArticleFollow, 'articleFollow')
+      .where('articleFollow.userId = :userId')
+      .getQuery();
+    query.andWhere(
+      new Brackets((where) =>
+        where
+          .where(`article.authorId IN ${followedAuthors}`)
+          .orWhere(`article.id IN ${followedArticles}`),
+      ),
+    );
 
     const [items, total] = await query.getManyAndCount();
     return toPaginatedResult(items, total, page, limit);
@@ -133,7 +166,7 @@ export class ArticlesService {
     return this.articles.findOneByOrFail({ id });
   }
 
-  async remove(userId: string, id: string): Promise<DeleteArticleResponse> {
+  async remove(userId: string, id: string): Promise<MessageResponse> {
     await this.assertArticleOwner(userId, id);
     try {
       await this.articles.delete(id);
@@ -160,6 +193,21 @@ export class ArticlesService {
     if (article.authorId !== userId) {
       throw new ForbiddenException(this.i18n.t('article.NOT_ARTICLE_AUTHOR'));
     }
+  }
+
+  /** Shared base for paginated lists: list columns, author, newest first. */
+  private buildListQuery(
+    { page, limit }: PaginationParams,
+    sortBy: 'createdAt' | 'updatedAt',
+  ): SelectQueryBuilder<Article> {
+    return this.articles
+      .createQueryBuilder('article')
+      .innerJoin('article.author', 'author')
+      .select(ARTICLE_LIST_COLUMNS)
+      .orderBy(`article.${sortBy}`, 'DESC')
+      .addOrderBy('article.id', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
   }
 
   /** e.g. "Bài viết đầu tiên!" -> "bai-viet-dau-tien-3f9a1c" */

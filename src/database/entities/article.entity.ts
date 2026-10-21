@@ -6,6 +6,7 @@ import { User } from './user.entity';
 @Entity('articles')
 @Index(['authorId'])
 @Index(['createdAt'])
+@Index(['updatedAt'])
 export class Article extends BaseEntity {
   @ApiProperty({ example: 'my-first-article-3f9a1c' })
   @Column({ unique: true })

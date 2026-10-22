@@ -14,6 +14,7 @@ import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { FollowsModule } from './follows/follows.module';
 import { RedisModule } from './redis/redis.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { RedisModule } from './redis/redis.module';
     AuthModule,
     FollowsModule,
     ArticlesModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,3 +5,4 @@ export { Article } from './article.entity';
 export { ArticleFollow } from './article-follow.entity';
 export { Attachment } from './attachment.entity';
 export { Follow } from './follow.entity';
+export { Comment } from './comment.entity';
